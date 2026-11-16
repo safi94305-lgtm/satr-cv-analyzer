@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;450;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/style.css?v=20261116-tracker1">
+  <link rel="stylesheet" href="/static/style.css?v=20261116-skillplan1">
 </head>
 <body>
   <header class="site-header">
@@ -88,6 +88,13 @@
                 <p class="field-hint">أسئلة بالإنجليزية من سيرتك والإعلان. اكتبي إجابتك لتحصلي على ملاحظات بالعربي.</p>
                 <p id="interviewStatus" class="status interview-status" role="status" aria-live="polite"></p>
                 <div id="interviewQuestions" class="interview-questions"></div>
+              </section>
+              <section id="skillPlanPanel" class="skill-plan-panel" hidden>
+                <div class="skill-plan-heading"><div><span class="section-index">تطوير موجّه</span><h3>خطة لسد فجوات المهارات</h3></div><button id="generateSkillPlanBtn" class="button button-light skill-plan-button" type="button">ابني خطتي</button></div>
+                <p class="field-hint">نحوّل المتطلبات غير الظاهرة بوضوح في سيرتك إلى خطوات تعلم ومشاريع قصيرة، مع مصادر مناسبة.</p>
+                <p id="skillPlanStatus" class="status skill-plan-status" role="status" aria-live="polite"></p>
+                <div id="skillPlanSummary" class="skill-plan-summary" hidden></div>
+                <div id="skillPlanResults" class="skill-plan-results"></div>
               </section>
               <div id="analysis" class="analysis"></div>
               <p class="result-disclaimer">راجعي كل التفاصيل قبل التقديم. التحليل إرشادي ولا يضمن اجتياز أنظمة الفرز أو القبول.</p>
@@ -216,6 +223,7 @@
         <details><summary>هل بقدر أرفع صورة أو PDF ممسوح؟<span aria-hidden="true">+</span></summary><p>مش حاليًا. لازم يكون النص قابلًا للاستخراج من الملف. ملفات الصور تحتاج OCR، وهذه الميزة غير مضافة بعد.</p></details>
         <details><summary>شو رح أستلم بعد التحليل؟<span aria-hidden="true">+</span></summary><p>بتشوفي الملاحظات بالعربي. إذا كانت السيرة بالعربي، بتنزلي نسخة PDF إنجليزية؛ وإذا كانت بلغة ثانية واحتاجت تنظيمًا لأنظمة ATS، بتنزلي نسخة PDF منظّمة بلغتها. إذا كانت مناسبة أصلًا، بتشوفي التحليل بدون نسخة جديدة.</p></details>
         <details><summary>كيف أستخدم إعلان وظيفة أو تدريب؟<span aria-hidden="true">+</span></summary><p>الصقي الإعلان قبل التحليل. بنعرض درجة ملاءمة منفصلة عن درجة ATS العامة، ونرتّب نسخة PDF لتبرز الخبرات والمشاريع المرتبطة بما ورد فعلًا في سيرتك.</p></details>
+        <details><summary>كيف أستفيد من خطة سد فجوات المهارات؟<span aria-hidden="true">+</span></summary><p>بعد التحليل مع إعلان، اضغطي «ابني خطتي». بتظهر متطلبات ما ظهر لها دليل كافٍ في السيرة، مع خطوات تعلم ومصدر ومشروع تطبيقي. الخطة للتطوير، وما بتعني إنك تمتلكين المهارة قبل تعلمها.</p></details>
         <details><summary>هل بقدر أجهّز رسالة تقديم؟<span aria-hidden="true">+</span></summary><p>بعد التحليل مع إعلان وظيفة أو تدريب، اختاري كتابة رسالة التقديم. بتظهر لك بالإنجليزية للمراجعة، ومعها خيار تنزيل PDF. راجعيها وعدّليها قبل الإرسال.</p></details>
         <details><summary>كيف بتدرب على المقابلة؟<span aria-hidden="true">+</span></summary><p>بعد التحليل مع إعلان، ولّدي أسئلة مخصصة. اكتبي إجابتك بالإنجليزية لتحصلي على نقاط قوة واقتراحات تحسين بالعربي ومثال صياغة بالإنجليزية. كل إجابة ترسليها إلى Groq للمراجعة.</p></details>
         <details><summary>هل بتضيفوا خبرات أو مهارات مش موجودة؟<span aria-hidden="true">+</span></summary><p>لا. نعيد صياغة وترتيب المشاريع الجامعية والتدريب والأنشطة المذكورة في سيرتك، وما بنخترع مهارات أو إنجازات أو أرقام.</p></details>
@@ -231,6 +239,6 @@
   </main>
 
   <footer class="site-footer"><div class="container footer-inner"><a class="brand" href="#home"><span class="brand-symbol" aria-hidden="true"><i></i><i></i><b></b></span><span>سطر</span></a><p>ملاحظات أوضح لبداية مهنية أقوى.</p><span class="footer-note">© سطر · أداة إرشادية لتحسين السيرة الذاتية</span></div></footer>
-  <script src="/static/app.js?v=20261116-tracker1"></script>
+  <script src="/static/app.js?v=20261116-skillplan1"></script>
 </body>
 </html>

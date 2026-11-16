@@ -27,6 +27,11 @@ const interviewPanel = document.querySelector('#interviewPanel');
 const generateQuestionsBtn = document.querySelector('#generateQuestionsBtn');
 const interviewQuestions = document.querySelector('#interviewQuestions');
 const interviewStatus = document.querySelector('#interviewStatus');
+const skillPlanPanel = document.querySelector('#skillPlanPanel');
+const generateSkillPlanBtn = document.querySelector('#generateSkillPlanBtn');
+const skillPlanStatus = document.querySelector('#skillPlanStatus');
+const skillPlanSummary = document.querySelector('#skillPlanSummary');
+const skillPlanResults = document.querySelector('#skillPlanResults');
 let currentFile = null;
 let currentPdfUrl = null;
 let currentLetterPdfUrl = null;
@@ -39,6 +44,11 @@ function setStatus(message, kind = '') {
 function setInterviewStatus(message, kind = '') {
   interviewStatus.textContent = message;
   interviewStatus.className = `status interview-status ${kind}`;
+}
+
+function setSkillPlanStatus(message, kind = '') {
+  skillPlanStatus.textContent = message;
+  skillPlanStatus.className = `status skill-plan-status ${kind}`;
 }
 
 function escapeHtml(value) {
@@ -86,7 +96,10 @@ function chooseFile(file) {
   matchCard.hidden = true;
   coverLetterPanel.hidden = true;
   interviewPanel.hidden = true;
+  skillPlanPanel.hidden = true;
   interviewQuestions.replaceChildren();
+  skillPlanResults.replaceChildren();
+  skillPlanSummary.hidden = true;
   setInterviewStatus('');
   setStatus('');
 }
@@ -123,7 +136,10 @@ analyzeBtn.addEventListener('click', async () => {
   result.hidden = true;
   coverLetterPanel.hidden = true;
   interviewPanel.hidden = true;
+  skillPlanPanel.hidden = true;
   interviewQuestions.replaceChildren();
+  skillPlanResults.replaceChildren();
+  skillPlanSummary.hidden = true;
   setInterviewStatus('');
   coverLetterResult.hidden = true;
   coverLetterDownload.hidden = true;
@@ -157,6 +173,7 @@ analyzeBtn.addEventListener('click', async () => {
     analysis.textContent = data.analysis;
     coverLetterPanel.hidden = !data.has_job_description;
     interviewPanel.hidden = !data.has_job_description;
+    skillPlanPanel.hidden = !data.has_job_description;
     atsScoreEl.textContent = score;
     atsMeter.setAttribute('aria-valuenow', String(score));
     atsMeterFill.style.width = `${score}%`;
@@ -370,6 +387,124 @@ interviewQuestions.addEventListener('click', async event => {
   } finally {
     button.disabled = false;
     button.textContent = 'راجع إجابتي';
+  }
+});
+
+generateSkillPlanBtn.addEventListener('click', async () => {
+  if (!currentFile) {
+    setSkillPlanStatus('ارفعي السيرة من جديد ثم أعيدي تحليلها مع وصف الوظيفة.', 'error');
+    return;
+  }
+  const description = jobDescription.value.trim();
+  if (!description) {
+    setSkillPlanStatus('أضيفي وصف الوظيفة أو التدريب ثم أعيدي التحليل.', 'error');
+    return;
+  }
+
+  generateSkillPlanBtn.disabled = true;
+  generateSkillPlanBtn.textContent = 'جاري بناء الخطة…';
+  skillPlanResults.replaceChildren();
+  skillPlanSummary.hidden = true;
+  setSkillPlanStatus('نقارن متطلبات الإعلان بما ظهر في سيرتك…', 'loading');
+  const body = new FormData();
+  body.append('file', currentFile);
+  body.append('job_description', description);
+  try {
+    const response = await fetch('/api/skills/plan', { method: 'POST', body });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.detail || `الخادم ردّ بالحالة ${response.status}. حدّثي الصفحة أو أعيدي نشر النسخة الأخيرة.`);
+    if (!Array.isArray(data.gaps)) throw new Error('وصلت خطة غير مكتملة. حاولي مرة ثانية.');
+    skillPlanSummary.textContent = data.summary || 'هذه فرص تعلم مبنية على المتطلبات التي لم يظهر لها دليل كافٍ في السيرة.';
+    skillPlanSummary.hidden = false;
+
+    if (data.gaps.length === 0) {
+      const complete = document.createElement('p');
+      complete.className = 'no-skill-gaps';
+      complete.textContent = 'ما ظهرت فجوات رئيسية واضحة في المتطلبات. راجعي الإعلان وتأكدي أن مهاراتك موثقة بأمثلة في سيرتك.';
+      skillPlanResults.append(complete);
+    }
+
+    data.gaps.forEach((gap, index) => {
+      const card = document.createElement('article');
+      card.className = 'skill-gap-card';
+      const heading = document.createElement('div');
+      heading.className = 'skill-gap-heading';
+      const number = document.createElement('span');
+      number.textContent = String(index + 1).padStart(2, '0');
+      const title = document.createElement('h4');
+      title.textContent = gap.requirement || 'متطلب من الإعلان';
+      heading.append(number, title);
+      card.append(heading);
+
+      if (gap.gap_explanation) {
+        const note = document.createElement('p');
+        note.className = 'skill-gap-explanation';
+        note.textContent = gap.gap_explanation;
+        card.append(note);
+      }
+
+      const columns = document.createElement('div');
+      columns.className = 'skill-plan-columns';
+      const learning = document.createElement('section');
+      learning.className = 'skill-plan-block';
+      const learningTitle = document.createElement('h5');
+      learningTitle.textContent = 'خطوات التعلم';
+      const learningList = document.createElement('ol');
+      (Array.isArray(gap.learning_steps) ? gap.learning_steps : []).forEach(step => {
+        const item = document.createElement('li');
+        item.textContent = step;
+        learningList.append(item);
+      });
+      learning.append(learningTitle, learningList);
+
+      const project = document.createElement('section');
+      project.className = 'skill-plan-block skill-project-block';
+      const projectTitle = document.createElement('h5');
+      projectTitle.textContent = gap.project_title || 'مشروع تدريبي';
+      project.append(projectTitle);
+      if (gap.project_description) {
+        const descriptionText = document.createElement('p');
+        descriptionText.textContent = gap.project_description;
+        project.append(descriptionText);
+      }
+      if (Array.isArray(gap.project_deliverables) && gap.project_deliverables.length) {
+        const outputLabel = document.createElement('strong');
+        outputLabel.className = 'project-output-label';
+        outputLabel.textContent = 'مخرجات تقدري تضيفيها لملف أعمالك';
+        const outputList = document.createElement('ul');
+        gap.project_deliverables.forEach(deliverable => {
+          const item = document.createElement('li');
+          item.textContent = deliverable;
+          outputList.append(item);
+        });
+        project.append(outputLabel, outputList);
+      }
+      columns.append(learning, project);
+      card.append(columns);
+
+      if (gap.resource && gap.resource.url && gap.resource.title) {
+        try {
+          const resourceUrl = new URL(gap.resource.url);
+          if (resourceUrl.protocol === 'https:') {
+            const resource = document.createElement('a');
+            resource.className = 'skill-resource-link';
+            resource.href = resourceUrl.href;
+            resource.target = '_blank';
+            resource.rel = 'noopener noreferrer';
+            resource.textContent = `افتحي المصدر: ${gap.resource.title} · ${gap.resource.provider || 'مصدر تعليمي'}`;
+            card.append(resource);
+          }
+        } catch { /* Ignore malformed resource URLs. */ }
+      }
+      skillPlanResults.append(card);
+    });
+
+    setSkillPlanStatus(data.gaps.length ? 'جهّزنا خطتك. ابدئي بالأولوية الأولى وأضيفي المشروع لملف أعمالك بعد إنجازه.' : 'اكتمل التقييم.');
+  } catch (error) {
+    setSkillPlanStatus(error.message || 'تعذّر بناء الخطة. حاولي مرة ثانية.', 'error');
+  } finally {
+    generateSkillPlanBtn.disabled = false;
+    generateSkillPlanBtn.textContent = 'ابني خطتي';
   }
 });
 
