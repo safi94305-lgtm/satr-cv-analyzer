@@ -8,6 +8,10 @@ const analysis = document.querySelector('#analysis');
 const rewriteNotice = document.querySelector('#rewriteNotice');
 const rewriteMessage = document.querySelector('#rewriteMessage');
 const pdfDownload = document.querySelector('#pdfDownload');
+const atsScoreEl = document.querySelector('#atsScore');
+const atsScoreLabel = document.querySelector('#atsScoreLabel');
+const atsMeter = document.querySelector('#atsMeter');
+const atsMeterFill = document.querySelector('#atsMeterFill');
 let currentFile = null;
 let currentPdfUrl = null;
 
@@ -105,10 +109,18 @@ analyzeBtn.addEventListener('click', async () => {
     const response = await fetch('/api/analyze', { method: 'POST', body });
     const data = await response.json();
     if (!response.ok) throw new Error(data.detail || 'تعذّر إكمال التحليل. حاول مرة ثانية.');
+    const score = Number(data.ats_score);
+    if (!Number.isInteger(score) || score < 0 || score > 100) {
+      throw new Error('تعذّر قراءة درجة ATS. حاولي التحليل مرة ثانية.');
+    }
     if (data.needs_rewrite && !data.pdf_base64) {
       throw new Error('تعذّر تجهيز النسخة الجديدة. حاولي مرة ثانية.');
     }
     analysis.textContent = data.analysis;
+    atsScoreEl.textContent = score;
+    atsMeter.setAttribute('aria-valuenow', String(score));
+    atsMeterFill.style.width = `${score}%`;
+    atsScoreLabel.textContent = score >= 91 ? 'قوية جدًا' : score >= 81 ? 'قوية' : score >= 71 ? 'جيدة' : score >= 51 ? 'تحتاج تحسين' : 'تحتاج مراجعة';
     rewriteNotice.hidden = false;
     if (data.needs_rewrite) {
       rewriteMessage.textContent = data.source_is_arabic

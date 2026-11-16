@@ -57,6 +57,11 @@
             <p id="status" class="status" role="status" aria-live="polite"></p>
             <article id="result" class="result-output" hidden>
               <div class="result-heading"><div><span class="section-index">النتيجة</span><h3>ملاحظات على سيرتك</h3></div><button id="copyBtn" class="copy-button" type="button">انسخ التحليل</button></div>
+              <section class="score-card" aria-label="درجة جاهزية السيرة لأنظمة الفرز">
+                <div class="score-top"><div><span class="section-index">جاهزية النص لأنظمة ATS</span><strong class="score-value"><span id="atsScore">—</span><small> / 100</small></strong></div><span id="atsScoreLabel" class="score-label">تقييم تقريبي</span></div>
+                <div id="atsMeter" class="score-meter" role="progressbar" aria-label="درجة جاهزية ATS" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="atsMeterFill"></i></div>
+                <p class="score-note">الدرجة تقيس وضوح النص وترتيبه، ولا تقارنه بوصف وظيفة محدد أو تضمن القبول.</p>
+              </section>
               <div id="rewriteNotice" class="rewrite-notice" hidden>
                 <p id="rewriteMessage"></p>
                 <a id="pdfDownload" class="button button-dark pdf-button" download hidden>تنزيل السيرة المنظّمة PDF <span aria-hidden="true">↓</span></a>
