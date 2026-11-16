@@ -23,6 +23,10 @@ const coverLetterBtn = document.querySelector('#coverLetterBtn');
 const coverLetterResult = document.querySelector('#coverLetterResult');
 const coverLetterText = document.querySelector('#coverLetterText');
 const coverLetterDownload = document.querySelector('#coverLetterDownload');
+const interviewPanel = document.querySelector('#interviewPanel');
+const generateQuestionsBtn = document.querySelector('#generateQuestionsBtn');
+const interviewQuestions = document.querySelector('#interviewQuestions');
+const interviewStatus = document.querySelector('#interviewStatus');
 let currentFile = null;
 let currentPdfUrl = null;
 let currentLetterPdfUrl = null;
@@ -30,6 +34,11 @@ let currentLetterPdfUrl = null;
 function setStatus(message, kind = '') {
   statusEl.textContent = message;
   statusEl.className = `status ${kind}`;
+}
+
+function setInterviewStatus(message, kind = '') {
+  interviewStatus.textContent = message;
+  interviewStatus.className = `status interview-status ${kind}`;
 }
 
 function escapeHtml(value) {
@@ -76,6 +85,9 @@ function chooseFile(file) {
   result.hidden = true;
   matchCard.hidden = true;
   coverLetterPanel.hidden = true;
+  interviewPanel.hidden = true;
+  interviewQuestions.replaceChildren();
+  setInterviewStatus('');
   setStatus('');
 }
 
@@ -110,6 +122,9 @@ analyzeBtn.addEventListener('click', async () => {
   setStatus('قد يستغرق التحليل بضع ثوانٍ.', 'loading');
   result.hidden = true;
   coverLetterPanel.hidden = true;
+  interviewPanel.hidden = true;
+  interviewQuestions.replaceChildren();
+  setInterviewStatus('');
   coverLetterResult.hidden = true;
   coverLetterDownload.hidden = true;
   coverLetterDownload.removeAttribute('href');
@@ -141,6 +156,7 @@ analyzeBtn.addEventListener('click', async () => {
     }
     analysis.textContent = data.analysis;
     coverLetterPanel.hidden = !data.has_job_description;
+    interviewPanel.hidden = !data.has_job_description;
     atsScoreEl.textContent = score;
     atsMeter.setAttribute('aria-valuenow', String(score));
     atsMeterFill.style.width = `${score}%`;
@@ -222,6 +238,138 @@ coverLetterBtn.addEventListener('click', async () => {
   } finally {
     coverLetterBtn.disabled = false;
     coverLetterBtn.textContent = 'اكتب رسالة التقديم';
+  }
+});
+
+generateQuestionsBtn.addEventListener('click', async () => {
+  if (!currentFile) {
+    setInterviewStatus('ارفعي السيرة من جديد ثم أعيدي تحليلها مع وصف الوظيفة.', 'error');
+    return;
+  }
+  const description = jobDescription.value.trim();
+  if (!description) {
+    setInterviewStatus('أضيفي وصف الوظيفة أو التدريب ثم أعيدي التحليل.', 'error');
+    return;
+  }
+  generateQuestionsBtn.disabled = true;
+  generateQuestionsBtn.textContent = 'جاري تجهيز الأسئلة…';
+  interviewQuestions.replaceChildren();
+  setInterviewStatus('جاري تجهيز أسئلة مرتبطة بسيرتك والإعلان…', 'loading');
+  setStatus('نجهّز أسئلة مقابلة مرتبطة بالسيرة والإعلان.', 'loading');
+
+  const body = new FormData();
+  body.append('file', currentFile);
+  body.append('job_description', description);
+  try {
+    const response = await fetch('/api/interview/questions', { method: 'POST', body });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.detail || `الخادم ردّ بالحالة ${response.status}. حدّثي الصفحة أو أعيدي نشر النسخة الأخيرة.`);
+    if (!Array.isArray(data.questions) || data.questions.length < 3) {
+      throw new Error('وصلت أسئلة غير مكتملة. حاولي مرة ثانية.');
+    }
+    data.questions.forEach((question, index) => {
+      const card = document.createElement('article');
+      card.className = 'interview-question-card';
+      const heading = document.createElement('div');
+      heading.className = 'interview-question-title';
+      const number = document.createElement('span');
+      number.textContent = String(index + 1).padStart(2, '0');
+      const title = document.createElement('h4');
+      title.textContent = question;
+      heading.append(number, title);
+
+      const answer = document.createElement('textarea');
+      answer.className = 'interview-answer';
+      answer.maxLength = 4000;
+      answer.placeholder = 'اكتبي إجابتك بالإنجليزية…';
+      answer.setAttribute('aria-label', `إجابتك عن السؤال ${index + 1}`);
+
+      const evaluate = document.createElement('button');
+      evaluate.className = 'button button-light interview-feedback-button';
+      evaluate.type = 'button';
+      evaluate.dataset.action = 'evaluate-answer';
+      evaluate.dataset.question = question;
+      evaluate.textContent = 'راجع إجابتي';
+
+      const feedback = document.createElement('div');
+      feedback.className = 'interview-feedback';
+      feedback.hidden = true;
+      card.append(heading, answer, evaluate, feedback);
+      interviewQuestions.append(card);
+    });
+    setInterviewStatus('جهّزنا الأسئلة. اختاري سؤالًا واكتبي إجابتك للتدرّب.');
+    setStatus('جهّزنا أسئلة المقابلة.');
+  } catch (error) {
+    const message = error.message || 'تعذّر الاتصال بالخادم. حاولي مرة ثانية.';
+    setInterviewStatus(message, 'error');
+    setStatus(message, 'error');
+  } finally {
+    generateQuestionsBtn.disabled = false;
+    generateQuestionsBtn.textContent = 'جهّز أسئلة مخصصة';
+  }
+});
+
+interviewQuestions.addEventListener('click', async event => {
+  const button = event.target.closest('button[data-action="evaluate-answer"]');
+  if (!button) return;
+  const card = button.closest('.interview-question-card');
+  const answer = card.querySelector('.interview-answer').value.trim();
+  if (answer.length < 20) {
+    card.querySelector('.interview-feedback').textContent = 'اكتبي إجابة أطول قليلًا حتى نقدر نراجعها.';
+    card.querySelector('.interview-feedback').hidden = false;
+    return;
+  }
+  const description = jobDescription.value.trim();
+  if (!currentFile || !description) {
+    setInterviewStatus('ارفعي السيرة وأضيفي وصف الوظيفة ثم أعيدي التحليل.', 'error');
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = 'جاري مراجعة الإجابة…';
+  const body = new FormData();
+  body.append('file', currentFile);
+  body.append('job_description', description);
+  body.append('question', button.dataset.question);
+  body.append('answer', answer);
+  try {
+    const response = await fetch('/api/interview/feedback', { method: 'POST', body });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.detail || `الخادم ردّ بالحالة ${response.status}. أعيدي نشر النسخة الأخيرة.`);
+    const feedback = card.querySelector('.interview-feedback');
+    feedback.replaceChildren();
+    const addList = (headingText, items) => {
+      if (!Array.isArray(items) || items.length === 0) return;
+      const heading = document.createElement('h5');
+      heading.textContent = headingText;
+      const list = document.createElement('ul');
+      items.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = item;
+        list.append(li);
+      });
+      feedback.append(heading, list);
+    };
+    addList('نقاط قوية', data.strengths);
+    addList('جرّبي تحسين', data.improve);
+    if (data.sample_answer) {
+      const heading = document.createElement('h5');
+      heading.textContent = 'مثال لصياغة أوضح بالإنجليزية';
+      const example = document.createElement('p');
+      example.className = 'sample-answer';
+      example.textContent = data.sample_answer;
+      feedback.append(heading, example);
+    }
+    feedback.hidden = false;
+    setInterviewStatus('وصلتك ملاحظات على إجابتك. استخدميها لتطوير جوابك بصوتك.');
+  } catch (error) {
+    const feedback = card.querySelector('.interview-feedback');
+    feedback.textContent = error.message || 'تعذّر الاتصال بالخادم. حاولي مرة ثانية.';
+    feedback.hidden = false;
+    setInterviewStatus('تعذّرت مراجعة الإجابة. راجعي الرسالة تحت السؤال.', 'error');
+  } finally {
+    button.disabled = false;
+    button.textContent = 'راجع إجابتي';
   }
 });
 

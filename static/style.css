@@ -220,6 +220,21 @@ button, input { font: inherit; }
 .cover-letter-button:disabled { opacity: .65; cursor: wait; }
 .cover-letter-result { margin-top: 12px; padding: 15px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
 .cover-letter-result pre { margin: 0; color: #363941; white-space: pre-wrap; overflow-wrap: anywhere; font-family: Arial, sans-serif; font-size: 12px; line-height: 1.8; direction: ltr; text-align: left; }
+.interview-panel { margin-top: 14px; padding: 15px; border: 1px solid #dfe8e2; border-radius: 10px; background: #f8fbf9; }
+.interview-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.interview-heading h3 { margin: 3px 0 0; font-size: 15px; }
+.interview-generate-button, .interview-feedback-button { min-height: 37px; padding-inline: 12px; font-size: 11px; }
+.interview-generate-button:disabled, .interview-feedback-button:disabled { opacity: .65; cursor: wait; }
+.interview-question-card { margin-top: 12px; padding: 13px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+.interview-question-title { display: flex; align-items: flex-start; gap: 10px; }
+.interview-question-title > span { padding-top: 2px; color: var(--green); font-size: 11px; font-weight: 600; }
+.interview-question-title h4 { margin: 0; color: var(--ink); font-size: 13px; font-weight: 600; line-height: 1.6; direction: ltr; text-align: left; }
+.interview-answer { width: 100%; min-height: 82px; margin-top: 10px; padding: 10px; resize: vertical; border: 1px solid var(--line); border-radius: 7px; color: var(--ink); font: inherit; font-size: 12px; line-height: 1.7; direction: ltr; text-align: left; }
+.interview-answer:focus { outline: 2px solid rgba(67, 111, 82, .2); border-color: var(--green); }
+.interview-feedback { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); color: #464950; font-size: 12px; line-height: 1.75; }
+.interview-feedback h5 { margin: 8px 0 3px; color: var(--ink); font-size: 11px; }
+.interview-feedback ul { margin: 3px 0 9px; padding-inline-start: 20px; }
+.interview-feedback .sample-answer { margin: 4px 0 0; padding: 10px; border-radius: 6px; background: #f7f8f7; direction: ltr; text-align: left; white-space: pre-wrap; }
 .analysis { padding-top: 13px; color: #464950; font-size: 13px; line-height: 1.95; white-space: pre-wrap; overflow-wrap: anywhere; }
 .result-disclaimer { margin: 12px 0 0; padding-top: 10px; border-top: 1px solid var(--line); color: #85888e; font-size: 10px; }
 
