@@ -74,6 +74,14 @@
                 <p id="rewriteMessage"></p>
                 <a id="pdfDownload" class="button button-dark pdf-button" download hidden>تنزيل السيرة المنظّمة PDF <span aria-hidden="true">↓</span></a>
               </div>
+              <section id="coverLetterPanel" class="cover-letter-panel" hidden>
+                <div class="cover-letter-heading"><div><span class="section-index">خطاب التقديم</span><h3>رسالة تناسب الإعلان</h3></div><button id="coverLetterBtn" class="button button-light cover-letter-button" type="button">اكتب رسالة التقديم</button></div>
+                <p class="field-hint">بالإنجليزية، اعتمادًا على سيرتك والإعلان فقط.</p>
+                <div id="coverLetterResult" class="cover-letter-result" hidden>
+                  <pre id="coverLetterText"></pre>
+                  <a id="coverLetterDownload" class="button button-dark pdf-button" download hidden>تنزيل رسالة التقديم PDF <span aria-hidden="true">↓</span></a>
+                </div>
+              </section>
               <div id="analysis" class="analysis"></div>
               <p class="result-disclaimer">راجعي كل التفاصيل قبل التقديم. التحليل إرشادي ولا يضمن اجتياز أنظمة الفرز أو القبول.</p>
             </article>
@@ -160,6 +168,7 @@
         <details><summary>هل بقدر أرفع صورة أو PDF ممسوح؟<span aria-hidden="true">+</span></summary><p>مش حاليًا. لازم يكون النص قابلًا للاستخراج من الملف. ملفات الصور تحتاج OCR، وهذه الميزة غير مضافة بعد.</p></details>
         <details><summary>شو رح أستلم بعد التحليل؟<span aria-hidden="true">+</span></summary><p>بتشوفي الملاحظات بالعربي. إذا كانت السيرة بالعربي، بتنزلي نسخة PDF إنجليزية؛ وإذا كانت بلغة ثانية واحتاجت تنظيمًا لأنظمة ATS، بتنزلي نسخة PDF منظّمة بلغتها. إذا كانت مناسبة أصلًا، بتشوفي التحليل بدون نسخة جديدة.</p></details>
         <details><summary>كيف أستخدم إعلان وظيفة أو تدريب؟<span aria-hidden="true">+</span></summary><p>الصقي الإعلان قبل التحليل. بنعرض درجة ملاءمة منفصلة عن درجة ATS العامة، ونرتّب نسخة PDF لتبرز الخبرات والمشاريع المرتبطة بما ورد فعلًا في سيرتك.</p></details>
+        <details><summary>هل بقدر أجهّز رسالة تقديم؟<span aria-hidden="true">+</span></summary><p>بعد التحليل مع إعلان وظيفة أو تدريب، اختاري كتابة رسالة التقديم. بتظهر لك بالإنجليزية للمراجعة، ومعها خيار تنزيل PDF. راجعيها وعدّليها قبل الإرسال.</p></details>
         <details><summary>هل بتضيفوا خبرات أو مهارات مش موجودة؟<span aria-hidden="true">+</span></summary><p>لا. نعيد صياغة وترتيب المشاريع الجامعية والتدريب والأنشطة المذكورة في سيرتك، وما بنخترع مهارات أو إنجازات أو أرقام.</p></details>
         <details><summary>هل بتفحصوا شكل الصفحة والألوان؟<span aria-hidden="true">+</span></summary><p>التحليل الحالي يراجع النص المستخرج وترتيبه، وما بيفحص التصميم المرئي أو يضمن نتيجة أنظمة ATS.</p></details>
         <details><summary>هل تقييم ATS بضمن إني أنقبل؟<span aria-hidden="true">+</span></summary><p>لا. التقييم تقريبي لمساعدة تحسين الوضوح، وما بضمن القبول أو نتيجة التقديم.</p></details>

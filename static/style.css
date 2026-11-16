@@ -213,6 +213,13 @@ button, input { font: inherit; }
 .rewrite-notice { margin-top: 14px; padding: 12px; border: 1px solid #f0dfd6; border-radius: 9px; background: #fff9f5; }
 .rewrite-notice p { margin: 0; color: #5e514b; font-size: 12px; line-height: 1.8; }
 .pdf-button { min-height: 39px; margin-top: 10px; padding-inline: 15px; font-size: 11px; }
+.cover-letter-panel { margin-top: 14px; padding: 15px; border: 1px solid #e6e7e8; border-radius: 10px; background: #fbfbfa; }
+.cover-letter-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.cover-letter-heading h3 { margin: 3px 0 0; font-size: 15px; }
+.cover-letter-button { min-height: 37px; padding-inline: 12px; font-size: 11px; }
+.cover-letter-button:disabled { opacity: .65; cursor: wait; }
+.cover-letter-result { margin-top: 12px; padding: 15px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+.cover-letter-result pre { margin: 0; color: #363941; white-space: pre-wrap; overflow-wrap: anywhere; font-family: Arial, sans-serif; font-size: 12px; line-height: 1.8; direction: ltr; text-align: left; }
 .analysis { padding-top: 13px; color: #464950; font-size: 13px; line-height: 1.95; white-space: pre-wrap; overflow-wrap: anywhere; }
 .result-disclaimer { margin: 12px 0 0; padding-top: 10px; border-top: 1px solid var(--line); color: #85888e; font-size: 10px; }
 

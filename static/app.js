@@ -18,8 +18,14 @@ const matchScoreEl = document.querySelector('#matchScore');
 const matchScoreLabel = document.querySelector('#matchScoreLabel');
 const matchMeter = document.querySelector('#matchMeter');
 const matchMeterFill = document.querySelector('#matchMeterFill');
+const coverLetterPanel = document.querySelector('#coverLetterPanel');
+const coverLetterBtn = document.querySelector('#coverLetterBtn');
+const coverLetterResult = document.querySelector('#coverLetterResult');
+const coverLetterText = document.querySelector('#coverLetterText');
+const coverLetterDownload = document.querySelector('#coverLetterDownload');
 let currentFile = null;
 let currentPdfUrl = null;
+let currentLetterPdfUrl = null;
 
 function setStatus(message, kind = '') {
   statusEl.textContent = message;
@@ -69,6 +75,7 @@ function chooseFile(file) {
   analyzeBtn.disabled = false;
   result.hidden = true;
   matchCard.hidden = true;
+  coverLetterPanel.hidden = true;
   setStatus('');
 }
 
@@ -102,12 +109,20 @@ analyzeBtn.addEventListener('click', async () => {
   analyzeBtn.innerHTML = 'جاري مراجعة سيرتك… <span aria-hidden="true">↙</span>';
   setStatus('قد يستغرق التحليل بضع ثوانٍ.', 'loading');
   result.hidden = true;
+  coverLetterPanel.hidden = true;
+  coverLetterResult.hidden = true;
+  coverLetterDownload.hidden = true;
+  coverLetterDownload.removeAttribute('href');
   rewriteNotice.hidden = true;
   pdfDownload.hidden = true;
   pdfDownload.removeAttribute('href');
   if (currentPdfUrl) {
     URL.revokeObjectURL(currentPdfUrl);
     currentPdfUrl = null;
+  }
+  if (currentLetterPdfUrl) {
+    URL.revokeObjectURL(currentLetterPdfUrl);
+    currentLetterPdfUrl = null;
   }
 
   const body = new FormData();
@@ -125,6 +140,7 @@ analyzeBtn.addEventListener('click', async () => {
       throw new Error('تعذّر تجهيز النسخة الجديدة. حاولي مرة ثانية.');
     }
     analysis.textContent = data.analysis;
+    coverLetterPanel.hidden = !data.has_job_description;
     atsScoreEl.textContent = score;
     atsMeter.setAttribute('aria-valuenow', String(score));
     atsMeterFill.style.width = `${score}%`;
@@ -166,6 +182,46 @@ analyzeBtn.addEventListener('click', async () => {
   } finally {
     analyzeBtn.disabled = false;
     analyzeBtn.innerHTML = 'حلّل سيرتي <span aria-hidden="true">↙</span>';
+  }
+});
+
+coverLetterBtn.addEventListener('click', async () => {
+  if (!currentFile) return;
+  const description = jobDescription.value.trim();
+  if (!description) {
+    setStatus('أضيفي وصف الوظيفة أو التدريب أولًا.', 'error');
+    return;
+  }
+  coverLetterBtn.disabled = true;
+  coverLetterBtn.textContent = 'جاري كتابة الرسالة…';
+  setStatus('نجهّز رسالة إنجليزية من سيرتك والإعلان.', 'loading');
+  coverLetterResult.hidden = true;
+  coverLetterDownload.hidden = true;
+  if (currentLetterPdfUrl) {
+    URL.revokeObjectURL(currentLetterPdfUrl);
+    currentLetterPdfUrl = null;
+  }
+
+  const body = new FormData();
+  body.append('file', currentFile);
+  body.append('job_description', description);
+  try {
+    const response = await fetch('/api/cover-letter', { method: 'POST', body });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.detail || 'تعذّر تجهيز رسالة التقديم. حاولي مرة ثانية.');
+    if (!data.cover_letter || !data.pdf_base64) throw new Error('وصلت رسالة غير مكتملة. حاولي مرة ثانية.');
+    coverLetterText.textContent = data.cover_letter;
+    currentLetterPdfUrl = makePdfUrl(data.pdf_base64);
+    coverLetterDownload.href = currentLetterPdfUrl;
+    coverLetterDownload.download = data.pdf_filename || 'satr_cover_letter.pdf';
+    coverLetterDownload.hidden = false;
+    coverLetterResult.hidden = false;
+    setStatus('جهّزنا رسالة التقديم. راجعيها وعدّليها قبل الإرسال.');
+  } catch (error) {
+    setStatus(error.message || 'تعذّر الاتصال بالخادم. حاولي مرة ثانية.', 'error');
+  } finally {
+    coverLetterBtn.disabled = false;
+    coverLetterBtn.textContent = 'اكتب رسالة التقديم';
   }
 });
 
