@@ -12,6 +12,12 @@ const atsScoreEl = document.querySelector('#atsScore');
 const atsScoreLabel = document.querySelector('#atsScoreLabel');
 const atsMeter = document.querySelector('#atsMeter');
 const atsMeterFill = document.querySelector('#atsMeterFill');
+const jobDescription = document.querySelector('#jobDescription');
+const matchCard = document.querySelector('#matchCard');
+const matchScoreEl = document.querySelector('#matchScore');
+const matchScoreLabel = document.querySelector('#matchScoreLabel');
+const matchMeter = document.querySelector('#matchMeter');
+const matchMeterFill = document.querySelector('#matchMeterFill');
 let currentFile = null;
 let currentPdfUrl = null;
 
@@ -62,6 +68,7 @@ function chooseFile(file) {
   selected.innerHTML = `<span>الملف المختار</span><strong>${escapeHtml(file.name)} · ${formatSize(file.size)}</strong>`;
   analyzeBtn.disabled = false;
   result.hidden = true;
+  matchCard.hidden = true;
   setStatus('');
 }
 
@@ -105,6 +112,7 @@ analyzeBtn.addEventListener('click', async () => {
 
   const body = new FormData();
   body.append('file', currentFile);
+  body.append('job_description', jobDescription.value.trim());
   try {
     const response = await fetch('/api/analyze', { method: 'POST', body });
     const data = await response.json();
@@ -113,7 +121,7 @@ analyzeBtn.addEventListener('click', async () => {
     if (!Number.isInteger(score) || score < 0 || score > 100) {
       throw new Error('تعذّر قراءة درجة ATS. حاولي التحليل مرة ثانية.');
     }
-    if (data.needs_rewrite && !data.pdf_base64) {
+    if (data.pdf_created && !data.pdf_base64) {
       throw new Error('تعذّر تجهيز النسخة الجديدة. حاولي مرة ثانية.');
     }
     analysis.textContent = data.analysis;
@@ -121,13 +129,28 @@ analyzeBtn.addEventListener('click', async () => {
     atsMeter.setAttribute('aria-valuenow', String(score));
     atsMeterFill.style.width = `${score}%`;
     atsScoreLabel.textContent = score >= 91 ? 'قوية جدًا' : score >= 81 ? 'قوية' : score >= 71 ? 'جيدة' : score >= 51 ? 'تحتاج تحسين' : 'تحتاج مراجعة';
+    matchCard.hidden = !data.has_job_description;
+    if (data.has_job_description) {
+      const matchScore = Number(data.match_score);
+      if (!Number.isInteger(matchScore) || matchScore < 0 || matchScore > 100) {
+        throw new Error('تعذّر قراءة درجة الملاءمة. حاولي التحليل مرة ثانية.');
+      }
+      matchScoreEl.textContent = matchScore;
+      matchMeter.setAttribute('aria-valuenow', String(matchScore));
+      matchMeterFill.style.width = `${matchScore}%`;
+      matchScoreLabel.textContent = matchScore >= 85 ? 'تطابق قوي' : matchScore >= 65 ? 'تطابق متوسط' : 'تطابق محدود';
+    }
     rewriteNotice.hidden = false;
-    if (data.needs_rewrite) {
-      rewriteMessage.textContent = data.source_is_arabic
-        ? 'السيرة المرفوعة بالعربية؛ جهّزنا لك نسخة إنجليزية بعمود واحد.'
-        : data.reason
-          ? `لاحظ التحليل نقاطًا تحتاج ترتيبًا: ${data.reason} جهّزنا نسخة PDF منظّمة.`
-          : 'لاحظ التحليل نقاطًا تحتاج ترتيبًا، وجهّزنا نسخة PDF منظّمة.';
+    if (data.pdf_created) {
+      rewriteMessage.textContent = data.has_job_description
+        ? data.source_is_arabic
+          ? 'جهّزنا نسخة PDF إنجليزية مخصصة للإعلان، مع الحفاظ على المعلومات الموجودة في سيرتك.'
+          : 'جهّزنا نسخة PDF مخصصة للإعلان، مع إبراز الخبرات والمهارات المثبتة في سيرتك.'
+        : data.source_is_arabic
+          ? 'السيرة المرفوعة بالعربية؛ جهّزنا لك نسخة إنجليزية بعمود واحد.'
+          : data.reason
+            ? `لاحظ التحليل نقاطًا تحتاج ترتيبًا: ${data.reason} جهّزنا نسخة PDF منظّمة.`
+            : 'لاحظ التحليل نقاطًا تحتاج ترتيبًا، وجهّزنا نسخة PDF منظّمة.';
       currentPdfUrl = makePdfUrl(data.pdf_base64);
       pdfDownload.href = currentPdfUrl;
       pdfDownload.download = data.pdf_filename || 'satr_ats_resume.pdf';
