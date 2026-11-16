@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;450;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/style.css?v=20261116-interview">
+  <link rel="stylesheet" href="/static/style.css?v=20261116-tracker1">
 </head>
 <body>
   <header class="site-header">
@@ -20,6 +20,7 @@
       <div class="nav-links">
         <a href="#features">المميزات</a>
         <a href="#how">كيف يعمل</a>
+        <a href="#applications">طلباتي</a>
         <a href="#privacy">الخصوصية</a>
       </div>
       <a class="button button-dark nav-cta" href="#analyzer">حلّل سيرتك <span aria-hidden="true">↙</span></a>
@@ -163,6 +164,47 @@
       </div>
     </section>
 
+    <section class="applications-section section" id="applications">
+      <div class="container">
+        <div class="application-heading">
+          <p class="eyebrow">خطواتك المهنية</p>
+          <h2>خلي كل تقديم<br><span>بمكان واحد.</span></h2>
+          <p class="section-lede">سجّلي الوظائف اللي مهتمة فيها، تابعي المواعيد والحالة، وارجعي لتفاصيل كل فرصة بسهولة.</p>
+        </div>
+        <div class="tracker-shell">
+          <div class="tracker-topline">
+            <div><span class="section-index">سجل التقديمات</span><h3>متابعة طلباتي</h3></div>
+            <span class="local-storage-badge"><i aria-hidden="true"></i> محفوظ على هذا الجهاز</span>
+          </div>
+          <div id="applicationStats" class="application-stats" aria-live="polite"></div>
+          <div class="tracker-layout">
+            <form id="applicationForm" class="tracker-form">
+              <span class="section-index">فرصة جديدة</span>
+              <h4 id="applicationFormTitle">أضيفي تقديمًا</h4>
+              <label for="applicationCompany">اسم الشركة</label>
+              <input id="applicationCompany" name="company" required maxlength="120" placeholder="مثال: شركة التقنية الحديثة">
+              <label for="applicationRole">المسمى الوظيفي</label>
+              <input id="applicationRole" name="role" required maxlength="140" placeholder="مثال: متدربة تطوير واجهات">
+              <div class="tracker-fields-row">
+                <div><label for="applicationDate">تاريخ التقديم</label><input id="applicationDate" name="date" type="date" required></div>
+                <div><label for="applicationStatus">الحالة</label><select id="applicationStatus" name="status"><option value="interested">مهتمة</option><option value="applied" selected>قدّمت</option><option value="interview">مقابلة</option><option value="offer">عرض وظيفي</option><option value="closed">مغلقة</option></select></div>
+              </div>
+              <label for="applicationLink">رابط الإعلان <span>اختياري</span></label>
+              <input id="applicationLink" name="link" type="url" maxlength="1000" placeholder="https://…" dir="ltr">
+              <div class="tracker-form-actions"><button id="applicationSave" class="button button-dark" type="submit">حفظ التقديم</button><button id="applicationCancel" class="button button-light" type="button" hidden>إلغاء التعديل</button></div>
+              <p id="trackerStatus" class="tracker-status" role="status" aria-live="polite"></p>
+            </form>
+            <section class="tracker-list-panel" aria-label="قائمة التقديمات">
+              <div class="tracker-list-heading"><div><span class="section-index">فرصك المسجلة</span><h4>كل التقديمات</h4></div><label class="tracker-filter-label" for="applicationFilter">عرض<select id="applicationFilter"><option value="all">الكل</option><option value="interested">مهتمة</option><option value="applied">قدّمت</option><option value="interview">مقابلة</option><option value="offer">عرض وظيفي</option><option value="closed">مغلقة</option></select></label></div>
+              <div id="applicationList" class="application-list"></div>
+              <p id="applicationEmpty" class="application-empty">لسه ما أضفتِ تقديمات. سجّلي أول فرصة من النموذج.</p>
+            </section>
+          </div>
+          <p class="tracker-privacy-note">بياناتك محفوظة محليًا في هذا المتصفح، وما بتنرسل إلى الموقع. إذا مسحتِ بيانات المتصفح، ممكن ينحذف السجل.</p>
+        </div>
+      </div>
+    </section>
+
     <section class="privacy-section section container" id="privacy">
       <div class="privacy-copy"><p class="eyebrow">ملفك إلك</p><h2>نعطيك ملاحظات.<br>وما نخزّن سيرتك.</h2><p>الملف يُعالج وقت الطلب ولا يُحفظ على الموقع. يُرسل النص المستخرج ووصف الوظيفة وإجابات التدريب التي تكتبها إلى Groq عند طلب التحليل أو الملاحظات.</p><a class="text-link" href="#faq">تفاصيل أكثر عن الملف والخصوصية <span aria-hidden="true">←</span></a></div>
       <div class="privacy-visual"><span class="privacy-mark" aria-hidden="true"><svg viewBox="0 0 64 64"><path d="M20 29v-7a12 12 0 0 1 24 0v7m-28 0h32v25H16z"/><circle cx="32" cy="41" r="3"/><path d="M32 44v5"/></svg></span><div><b>معالجة مؤقتة</b><p>الملف لا يُحفظ على الموقع بعد انتهاء الطلب</p></div><span class="privacy-check">✓</span></div>
@@ -179,7 +221,7 @@
         <details><summary>هل بتضيفوا خبرات أو مهارات مش موجودة؟<span aria-hidden="true">+</span></summary><p>لا. نعيد صياغة وترتيب المشاريع الجامعية والتدريب والأنشطة المذكورة في سيرتك، وما بنخترع مهارات أو إنجازات أو أرقام.</p></details>
         <details><summary>هل بتفحصوا شكل الصفحة والألوان؟<span aria-hidden="true">+</span></summary><p>التحليل الحالي يراجع النص المستخرج وترتيبه، وما بيفحص التصميم المرئي أو يضمن نتيجة أنظمة ATS.</p></details>
         <details><summary>هل تقييم ATS بضمن إني أنقبل؟<span aria-hidden="true">+</span></summary><p>لا. التقييم تقريبي لمساعدة تحسين الوضوح، وما بضمن القبول أو نتيجة التقديم.</p></details>
-        <details><summary>كيف بتُستخدم معلومات السيرة؟<span aria-hidden="true">+</span></summary><p>النص المستخرج من السيرة ووصف الوظيفة الذي أضفته يُرسلان إلى Groq لتوليد التحليل. الموقع نفسه لا يحتفظ بالملف. تجنّب رفع معلومات حساسة لا تحتاجها في السيرة.</p></details>
+        <details><summary>كيف بتُستخدم معلومات السيرة؟<span aria-hidden="true">+</span></summary><p>النص المستخرج من السيرة ووصف الوظيفة وإجابات التدريب تُرسل إلى Groq عند طلب المراجعة. سجل التقديمات يبقى في تخزين المتصفح على جهازك ولا يُرسل إلى الخادم. تجنّب رفع معلومات حساسة لا تحتاجها في السيرة.</p></details>
       </div></div>
     </section>
 
@@ -189,6 +231,6 @@
   </main>
 
   <footer class="site-footer"><div class="container footer-inner"><a class="brand" href="#home"><span class="brand-symbol" aria-hidden="true"><i></i><i></i><b></b></span><span>سطر</span></a><p>ملاحظات أوضح لبداية مهنية أقوى.</p><span class="footer-note">© سطر · أداة إرشادية لتحسين السيرة الذاتية</span></div></footer>
-  <script src="/static/app.js?v=20261116-interview"></script>
+  <script src="/static/app.js?v=20261116-tracker1"></script>
 </body>
 </html>

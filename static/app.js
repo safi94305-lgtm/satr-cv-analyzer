@@ -382,3 +382,214 @@ document.querySelector('#copyBtn').addEventListener('click', async event => {
     setStatus('تعذّر النسخ تلقائيًا. حددي النص وانسخيه يدويًا.', 'error');
   }
 });
+
+const applicationForm = document.querySelector('#applicationForm');
+const applicationCompany = document.querySelector('#applicationCompany');
+const applicationRole = document.querySelector('#applicationRole');
+const applicationDate = document.querySelector('#applicationDate');
+const applicationStatus = document.querySelector('#applicationStatus');
+const applicationLink = document.querySelector('#applicationLink');
+const applicationSave = document.querySelector('#applicationSave');
+const applicationCancel = document.querySelector('#applicationCancel');
+const applicationFormTitle = document.querySelector('#applicationFormTitle');
+const applicationFilter = document.querySelector('#applicationFilter');
+const applicationList = document.querySelector('#applicationList');
+const applicationEmpty = document.querySelector('#applicationEmpty');
+const applicationStats = document.querySelector('#applicationStats');
+const trackerStatus = document.querySelector('#trackerStatus');
+const APPLICATION_STORAGE_KEY = 'satr_application_tracker_v1';
+const APPLICATION_STATUS_LABELS = {
+  interested: 'مهتمة', applied: 'قدّمت', interview: 'مقابلة', offer: 'عرض وظيفي', closed: 'مغلقة'
+};
+let applications = [];
+let editingApplicationId = null;
+
+function setTrackerStatus(message, kind = '') {
+  trackerStatus.textContent = message;
+  trackerStatus.className = `tracker-status ${kind}`;
+}
+
+function todayLocal() {
+  const now = new Date();
+  const localDate = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+  return localDate.toISOString().slice(0, 10);
+}
+
+function loadApplications() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(APPLICATION_STORAGE_KEY) || '[]');
+    return Array.isArray(saved) ? saved.filter(item =>
+      item && typeof item.id === 'string' && typeof item.company === 'string' &&
+      typeof item.role === 'string' && typeof item.date === 'string' &&
+      Object.hasOwn(APPLICATION_STATUS_LABELS, item.status)
+    ) : [];
+  } catch {
+    setTrackerStatus('تعذّر قراءة السجل المحفوظ في هذا المتصفح.', 'error');
+    return [];
+  }
+}
+
+function persistApplications(nextApplications) {
+  try {
+    localStorage.setItem(APPLICATION_STORAGE_KEY, JSON.stringify(nextApplications));
+    return true;
+  } catch {
+    setTrackerStatus('تعذّر الحفظ في المتصفح. تحققي من مساحة التخزين أو إعدادات الخصوصية.', 'error');
+    return false;
+  }
+}
+
+function makeTrackerElement(tag, className, text) {
+  const element = document.createElement(tag);
+  if (className) element.className = className;
+  if (text !== undefined) element.textContent = text;
+  return element;
+}
+
+function formatApplicationDate(value) {
+  const date = new Date(`${value}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat('ar', { year: 'numeric', month: 'short', day: 'numeric' }).format(date);
+}
+
+function renderApplicationStats() {
+  const metrics = [
+    ['كل الفرص', applications.length],
+    ['قدّمت', applications.filter(item => item.status === 'applied').length],
+    ['مقابلات', applications.filter(item => item.status === 'interview').length],
+    ['عروض', applications.filter(item => item.status === 'offer').length],
+  ];
+  applicationStats.replaceChildren();
+  metrics.forEach(([label, value]) => {
+    const metric = makeTrackerElement('div', 'application-stat');
+    metric.append(makeTrackerElement('strong', '', String(value)), makeTrackerElement('span', '', label));
+    applicationStats.append(metric);
+  });
+}
+
+function renderApplications() {
+  renderApplicationStats();
+  applicationList.replaceChildren();
+  const filter = applicationFilter.value;
+  const visible = applications
+    .filter(item => filter === 'all' || item.status === filter)
+    .sort((a, b) => b.date.localeCompare(a.date) || (b.updatedAt || '').localeCompare(a.updatedAt || ''));
+  applicationEmpty.hidden = visible.length > 0;
+  applicationEmpty.textContent = applications.length === 0
+    ? 'لسه ما أضفتِ تقديمات. سجّلي أول فرصة من النموذج.'
+    : 'ما في تقديمات بهذه الحالة.';
+
+  visible.forEach(item => {
+    const card = makeTrackerElement('article', 'application-card');
+    const main = makeTrackerElement('div', 'application-card-main');
+    const title = makeTrackerElement('h5', '', item.role);
+    const company = makeTrackerElement('p', 'application-company', item.company);
+    const date = makeTrackerElement('time', 'application-date', formatApplicationDate(item.date));
+    date.dateTime = item.date;
+    main.append(title, company, date);
+
+    const actions = makeTrackerElement('div', 'application-card-actions');
+    const status = makeTrackerElement('span', `application-status-chip status-${item.status}`, APPLICATION_STATUS_LABELS[item.status]);
+    const buttons = makeTrackerElement('div', 'application-row-buttons');
+    if (item.link) {
+      try {
+        const url = new URL(item.link);
+        if (url.protocol === 'http:' || url.protocol === 'https:') {
+          const link = makeTrackerElement('a', 'application-link', 'رابط الإعلان');
+          link.href = url.href;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          buttons.append(link);
+        }
+      } catch { /* Ignore invalid links in older saved entries. */ }
+    }
+    const edit = makeTrackerElement('button', 'tracker-row-action', 'تعديل');
+    edit.type = 'button';
+    edit.dataset.action = 'edit';
+    edit.dataset.id = item.id;
+    const remove = makeTrackerElement('button', 'tracker-row-action tracker-delete-action', 'حذف');
+    remove.type = 'button';
+    remove.dataset.action = 'delete';
+    remove.dataset.id = item.id;
+    buttons.append(edit, remove);
+    actions.append(status, buttons);
+    card.append(main, actions);
+    applicationList.append(card);
+  });
+}
+
+function clearApplicationForm() {
+  editingApplicationId = null;
+  applicationForm.reset();
+  applicationDate.value = todayLocal();
+  applicationStatus.value = 'applied';
+  applicationFormTitle.textContent = 'أضيفي تقديمًا';
+  applicationSave.textContent = 'حفظ التقديم';
+  applicationCancel.hidden = true;
+  setTrackerStatus('');
+}
+
+applicationDate.value = todayLocal();
+applications = loadApplications();
+renderApplications();
+
+applicationForm.addEventListener('submit', event => {
+  event.preventDefault();
+  if (!applicationForm.reportValidity()) return;
+  const existing = applications.find(item => item.id === editingApplicationId);
+  const record = {
+    id: existing?.id || (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`),
+    company: applicationCompany.value.trim(),
+    role: applicationRole.value.trim(),
+    date: applicationDate.value,
+    status: applicationStatus.value,
+    link: applicationLink.value.trim(),
+    updatedAt: new Date().toISOString(),
+  };
+  const next = existing
+    ? applications.map(item => item.id === existing.id ? record : item)
+    : [...applications, record];
+  if (!persistApplications(next)) return;
+  applications = next;
+  renderApplications();
+  clearApplicationForm();
+  setTrackerStatus(existing ? 'تم تحديث التقديم.' : 'تم حفظ التقديم على هذا الجهاز.');
+});
+
+applicationCancel.addEventListener('click', clearApplicationForm);
+applicationFilter.addEventListener('change', renderApplications);
+
+applicationList.addEventListener('click', event => {
+  const button = event.target.closest('button[data-action]');
+  if (!button) return;
+  const record = applications.find(item => item.id === button.dataset.id);
+  if (!record) return;
+
+  if (button.dataset.action === 'edit') {
+    editingApplicationId = record.id;
+    applicationCompany.value = record.company;
+    applicationRole.value = record.role;
+    applicationDate.value = record.date;
+    applicationStatus.value = record.status;
+    applicationLink.value = record.link || '';
+    applicationFormTitle.textContent = 'عدّلي بيانات التقديم';
+    applicationSave.textContent = 'حفظ التعديل';
+    applicationCancel.hidden = false;
+    setTrackerStatus('');
+    applicationForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    applicationCompany.focus({ preventScroll: true });
+  } else if (button.dataset.action === 'delete') {
+    if (!window.confirm(`تحذفي تقديم ${record.role} لدى ${record.company}؟`)) return;
+    const next = applications.filter(item => item.id !== record.id);
+    if (!persistApplications(next)) return;
+    applications = next;
+    renderApplications();
+    if (editingApplicationId === record.id) clearApplicationForm();
+    setTrackerStatus('تم حذف التقديم.');
+  }
+});
+
+window.addEventListener('storage', event => {
+  if (event.key !== APPLICATION_STORAGE_KEY) return;
+  applications = loadApplications();
+  renderApplications();
+});
